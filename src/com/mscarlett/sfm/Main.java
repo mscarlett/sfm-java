@@ -1,12 +1,14 @@
 package com.mscarlett.sfm;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.highgui.VideoCapture;
 
 public class Main {
 
 	static{
-		nu.pattern.OpenCV.loadLibrary();
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 	
 	public static void main(String[] args) throws InterruptedException {
@@ -41,7 +43,13 @@ public class Main {
 			// Render frame if the camera is still acquiring images
 			if (cap.read(image)) {
 				// Get homography between last image and current image
-			    featureMatching.match(lastImage, image);
+			    try {
+				    featureMatching.match(lastImage, image);
+			    } catch (CvException e) {
+			    	e.printStackTrace();
+			    } catch (UnsupportedOperationException e) {
+			    	e.printStackTrace();
+			    }
 				
 				frame.render(image);
 			} else {
@@ -51,5 +59,6 @@ public class Main {
 		}
 		
 		cap.release();
+		
 	}
 }

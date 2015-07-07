@@ -2,6 +2,8 @@ package com.mscarlett.sfm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
@@ -14,6 +16,7 @@ import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
+import org.opencv.features2d.KeyPoint;
 
 public class FeatureMatching {
 	
@@ -69,20 +72,21 @@ public class FeatureMatching {
 		extractor.compute(img2, keypoints2, descriptors2);
 		matcher.match(descriptors1, descriptors2, matches);
 		
-		List<DMatch> matchesList = matches.toList();
+		DMatch[] matchesArray = matches.toArray();
 		
+		// Min distance among matches
 	    double min_dist = 100;
 
 	    for( int i = 0; i < descriptors1.rows(); i++ ) {
-	    	double dist = matchesList.get(i).distance;
+	    	double dist = matchesArray[i].distance;
 	        if( dist < min_dist ) {
 	        	min_dist = dist;
 	        }
 	    }
 
 	    for( int i = 0; i < descriptors1.rows(); i++ ) {
-            if( matchesList.get(i).distance < 3*min_dist ) {
-                goodMatches.add(matchesList.get(i));
+            if( matchesArray[i].distance < 3*min_dist ) {
+                goodMatches.add(matchesArray[i]);
             }
 	    }
 	    
@@ -92,21 +96,36 @@ public class FeatureMatching {
 	    
 	    List<DMatch> imgMatches = matches.toList();
 	    
-	    double[] tmp = {0,0};
+	    KeyPoint[] kpArray1 = keypoints1.toArray();
+	    KeyPoint[] kpArray2 = keypoints2.toArray();
 	    
 	    for ( int i = 0; i < imgMatches.size(); i++ ) {
 	        //-- Get the keypoints from the good matches
 	    	// does it work?
-	        keypoints1.get(imgMatches.get(i).queryIdx, 0, tmp);
-	        mp1Points.add(new Point(tmp));
-	        keypoints2.get(imgMatches.get(i).trainIdx, 0, tmp);
-	        mp2Points.add(new Point(tmp));
+	    	KeyPoint kp1 = kpArray1[imgMatches.get(i).queryIdx];
+	        mp1Points.add(kp1.pt);
+	        KeyPoint kp2 = kpArray2[imgMatches.get(i).trainIdx];
+	        mp2Points.add(kp2.pt);
 	    }
 	    
 	    mp1.fromList(mp1Points);
 	    mp2.fromList(mp2Points);
 	    
-		H = Calib3d.findHomography(mp1, mp2, Calib3d.RANSAC, 5);
+	    // Maximum allowed reprojection error to treat point pair as inlier
+	    int ransacReprojThreshold = 5;
+	    
+		H = Calib3d.findHomography(mp1, mp2, Calib3d.RANSAC, ransacReprojThreshold);
+	}
+	
+	ExecutorService service = Executors.newFixedThreadPool(1);
+	
+	public void matchAsync(Mat lastImage, Mat image, long time) {
+		service.submit(new Runnable() {
+			@Override
+			public void run() {
+				FeatureMatching.this.match(lastImage, image);
+			}
+		});
 	}
 	
 	public Mat H() {
