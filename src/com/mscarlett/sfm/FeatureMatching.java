@@ -2,8 +2,6 @@ package com.mscarlett.sfm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
@@ -18,6 +16,7 @@ import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.Features2d;
 import org.opencv.features2d.KeyPoint;
 
+
 public class FeatureMatching {
 	
 	private final FeatureDetector featureDetector;
@@ -29,7 +28,7 @@ public class FeatureMatching {
 	private final Mat descriptors1;
 	private final Mat descriptors2;
 	private final MatOfDMatch matches;
-	private final Mat imgMatches;
+	//private final Mat imgMatches;
 	
 	private final List<DMatch> goodMatches;
 	private final List<Point> mp1Points;
@@ -37,8 +36,6 @@ public class FeatureMatching {
 	
     private final MatOfPoint2f mp1;
     private final MatOfPoint2f mp2;
-    
-    private Mat H;
     
 	public FeatureMatching() {
 		this(FeatureDetector.SIFT, DescriptorExtractor.SIFT, DescriptorMatcher.FLANNBASED);
@@ -54,7 +51,7 @@ public class FeatureMatching {
 		descriptors1 = new Mat();
 		descriptors2 = new Mat();
 		matches = new MatOfDMatch();
-		imgMatches = new Mat();
+		//imgMatches = new Mat();
 		
 		goodMatches = new ArrayList<DMatch>();
 		mp1Points = new ArrayList<Point>();
@@ -64,8 +61,17 @@ public class FeatureMatching {
 	    mp2 = new MatOfPoint2f();
 	}
 	
-	// http://docs.opencv.org/doc/tutorials/features2d/feature_homography/feature_homography.html
-	public void match(Mat img1, Mat img2) {
+	/**
+	 * Calculate homography matrix between two images
+	 * 
+	 * Based off instructions at
+	 * http://docs.opencv.org/doc/tutorials/features2d/feature_homography/feature_homography.html
+	
+	 * @param img1 the first image
+	 * @param img2 the second image
+	 * @return the 3x3 homography matrix between the two images
+	*/
+	public synchronized Mat match(Mat img1, Mat img2) {
 		featureDetector.detect(img1, keypoints1);
 		featureDetector.detect(img2, keypoints2);
 		extractor.compute(img1, keypoints1, descriptors1);
@@ -79,56 +85,50 @@ public class FeatureMatching {
 
 	    for( int i = 0; i < descriptors1.rows(); i++ ) {
 	    	double dist = matchesArray[i].distance;
-	        if( dist < min_dist ) {
+	        if (dist < min_dist) {
 	        	min_dist = dist;
 	        }
 	    }
 
 	    for( int i = 0; i < descriptors1.rows(); i++ ) {
-            if( matchesArray[i].distance < 3*min_dist ) {
+            if (matchesArray[i].distance <= 5*min_dist) {
                 goodMatches.add(matchesArray[i]);
             }
 	    }
 	    
 	    matches.fromList(goodMatches);
 	    
+	    goodMatches.clear();
+	    
+	    Mat imgMatches = new Mat();
 	    Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches);
 	    
-	    List<DMatch> imgMatches = matches.toList();
+	    matchesArray = matches.toArray();
 	    
 	    KeyPoint[] kpArray1 = keypoints1.toArray();
 	    KeyPoint[] kpArray2 = keypoints2.toArray();
 	    
-	    for ( int i = 0; i < imgMatches.size(); i++ ) {
+	    for ( int i = 0; i < matchesArray.length; i++ ) {
 	        //-- Get the keypoints from the good matches
 	    	// does it work?
-	    	KeyPoint kp1 = kpArray1[imgMatches.get(i).queryIdx];
+	    	KeyPoint kp1 = kpArray1[matchesArray[i].queryIdx];
 	        mp1Points.add(kp1.pt);
-	        KeyPoint kp2 = kpArray2[imgMatches.get(i).trainIdx];
+	        KeyPoint kp2 = kpArray2[matchesArray[i].trainIdx];
 	        mp2Points.add(kp2.pt);
 	    }
 	    
 	    mp1.fromList(mp1Points);
 	    mp2.fromList(mp2Points);
 	    
+	    mp1Points.clear();
+	    mp2Points.clear();
+	    
 	    // Maximum allowed reprojection error to treat point pair as inlier
 	    int ransacReprojThreshold = 5;
 	    
-		H = Calib3d.findHomography(mp1, mp2, Calib3d.RANSAC, ransacReprojThreshold);
-	}
-	
-	ExecutorService service = Executors.newFixedThreadPool(1);
-	
-	public void matchAsync(Mat lastImage, Mat image, long time) {
-		service.submit(new Runnable() {
-			@Override
-			public void run() {
-				FeatureMatching.this.match(lastImage, image);
-			}
-		});
-	}
-	
-	public Mat H() {
+	    // Get perspective transformation between the images
+		Mat H = Calib3d.findHomography(mp1, mp2, Calib3d.RANSAC, ransacReprojThreshold);
+		
 		return H;
 	}
 }
