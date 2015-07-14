@@ -11,11 +11,11 @@ public class SFMLauncher {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 	
-	private final SFM sfm;
+	private final SFMPipeline sfm;
 	
 	public SFMLauncher() {
 		// Obtains structure from images
-		sfm = new SFM();
+		sfm = new SFMPipeline();
 	}
 	
 	public void run() {
@@ -51,6 +51,8 @@ public class SFMLauncher {
 		while (true) {
 			// Render frame if the camera is still acquiring images
 			if (cap.read(image)) {
+				// Get accelerometer data
+				// Get rotation vector data
 				// Get homography between last image and current image
 			    sfm.applyAsync(image);
 				// Render image
