@@ -33,7 +33,7 @@ public class FeatureMatching {
 	private final double threshold;
 	
 	public FeatureMatching() {
-		this(FeatureDetector.SIFT, DescriptorExtractor.SIFT, DescriptorMatcher.FLANNBASED, 3.0);
+		this(FeatureDetector.SIFT, DescriptorExtractor.SIFT, DescriptorMatcher.FLANNBASED, 2.0);
 	}
 	
 	public FeatureMatching(int detectorType, int extractorType, int matcherType, double threshold) {
@@ -79,5 +79,14 @@ public class FeatureMatching {
 	    matches.fromList(goodMatches);
 	    
 	    goodMatches.clear();
+	}
+	
+	public static double[] getDistances(MatOfDMatch matches) {
+		DMatch[] matchesArray = matches.toArray();
+		double[] distances = new double[matchesArray.length];
+		for (int i = 0; i < matchesArray.length; i++) {
+			distances[i] = matchesArray[i].distance;
+		}
+		return distances;
 	}
 }

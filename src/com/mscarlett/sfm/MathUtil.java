@@ -37,6 +37,18 @@ public class MathUtil {
 		Core.gemm(B, A, 1, ZEROS, 0, C);
 	}
 	
+	public static void matMul(double[] A, double[] B, double[] C, int A_rows, int A_cols, int B_cols) {
+		for (int i = 0; i < A_rows; i++) {
+			for (int j = 0; j < B_cols; j++) {
+				C[i*B_cols+j] = 0;
+				
+				for (int k = 0; k < A_cols; k++) {
+				    C[i*B_cols+j] += A[i*A_cols+k]*B[k*B_cols+j];
+				}
+			}
+		}
+	}
+	
 	public static void essentialMatrix(Mat A, Mat F, Mat E) {
 		MathUtil.matMul(A.t(), F, E);
 		MathUtil.matMul(E, A, E);

@@ -18,13 +18,13 @@ import org.opencv.features2d.Features2d;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
-public class FeatureMatchingDemo extends AbstractDemo {
+public class FeatureMatchingDemoGrayscale extends AbstractDemo {
 	
 	private final FeatureMatching featureMatching;
 	private Mat prev;
 	private Mat prevGrayscale;
 
-	public FeatureMatchingDemo(String path) {
+	public FeatureMatchingDemoGrayscale(String path) {
 		super(path);
 		
 		featureMatching = new FeatureMatching();
@@ -45,7 +45,8 @@ public class FeatureMatchingDemo extends AbstractDemo {
 			
 			featureMatching.match(prevGrayscale, grayscale, mp1Points, mp2Points, matches);
 			
-			Mat rgb = mat.clone();
+			Mat rgb = new Mat();
+		    
 			Features2d.drawMatches(prev, mp1Points, mat, mp2Points, matches, rgb);
 		    //Highgui.imwrite("match_" +i+++ ".jpeg", rgb);
 		    showResult(rgb); 
@@ -56,6 +57,6 @@ public class FeatureMatchingDemo extends AbstractDemo {
 	}
 	
 	public static void main(String[] args) {
-		new FeatureMatchingDemo("demo/resources/kermit").run();
+		new FeatureMatchingDemoGrayscale("demo/resources/kermit").run();
 	}
 }

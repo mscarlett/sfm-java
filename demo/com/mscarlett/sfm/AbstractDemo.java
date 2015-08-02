@@ -49,7 +49,7 @@ public abstract class AbstractDemo {
 	public abstract void handleImg(Mat mat);
 	
 	public static void showResult(Mat img) {
-	    Imgproc.resize(img, img, new Size(640, 480));
+	    Imgproc.resize(img, img, new Size(640*2, 480*2));
 	    MatOfByte matOfByte = new MatOfByte();
 	    Highgui.imencode(".jpg", img, matOfByte);
 	    byte[] byteArray = matOfByte.toArray();
