@@ -47,23 +47,5 @@ public abstract class AbstractDemo {
 	}
 	
 	public abstract void handleImg(Mat mat);
-	
-	public static void showResult(Mat img) {
-	    Imgproc.resize(img, img, new Size(640*2, 480*2));
-	    MatOfByte matOfByte = new MatOfByte();
-	    Highgui.imencode(".jpg", img, matOfByte);
-	    byte[] byteArray = matOfByte.toArray();
-	    BufferedImage bufImage = null;
-	    try {
-	        InputStream in = new ByteArrayInputStream(byteArray);
-	        bufImage = ImageIO.read(in);
-	        JFrame frame = new JFrame();
-	        frame.getContentPane().add(new JLabel(new ImageIcon(bufImage)));
-	        frame.pack();
-	        frame.setVisible(true);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	}
 
 }

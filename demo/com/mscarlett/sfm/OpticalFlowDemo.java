@@ -31,25 +31,12 @@ public class OpticalFlowDemo extends AbstractDemo {
 			Mat flow = new Mat();
 			Mat flowMap = prev;
 			opticalFlow.calcOpticalFlow(prevGrayscale, grayscale, flow);
-			drawOptFlowMap(flow, flowMap, 16, 1.5, new Scalar(0, 255, 0));
-		    showResult(flowMap); 
+			GraphicsUtil.drawOptFlowMap(flow, flowMap, 16, 1.5, new Scalar(0, 255, 0));
+		    GraphicsUtil.showResult(flowMap); 
 		}
 		
 		prev = mat;
 		prevGrayscale = grayscale;
-	}
-	
-	private void drawOptFlowMap(Mat flow, Mat cflowmap, int step, double scale, Scalar color) 
-	{
-		for (int y = 0; y < cflowmap.rows(); y += step) {
-	        for (int x = 0; x < cflowmap.cols(); x += step) {
-	        	double[] point = flow.get(y, x);
-	        	Point first = new Point(x, y);
-	        	Point second = new Point(x+point[0], y+point[1]);
-	        	Core.line(cflowmap, first, second, color, 1, 8, 0);
-	        	Core.circle(cflowmap, first, 2, color, -1, 8, 0);
-	        }
-	    }
 	}
 	
 	public static void main(String[] args) {

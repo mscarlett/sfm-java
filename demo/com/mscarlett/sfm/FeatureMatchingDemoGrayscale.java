@@ -49,7 +49,7 @@ public class FeatureMatchingDemoGrayscale extends AbstractDemo {
 		    
 			Features2d.drawMatches(prev, mp1Points, mat, mp2Points, matches, rgb);
 		    //Highgui.imwrite("match_" +i+++ ".jpeg", rgb);
-		    showResult(rgb); 
+		    GraphicsUtil.showResult(rgb); 
 		}
 		
 		prev = mat;
