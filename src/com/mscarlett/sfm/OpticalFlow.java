@@ -1,6 +1,11 @@
 package com.mscarlett.sfm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.video.Video;
 
 public class OpticalFlow {
@@ -28,7 +33,9 @@ public class OpticalFlow {
 	}
 	
 	public void calcOpticalFlow(Mat img1, Mat img2, Mat uFlow) {
-		Video.calcOpticalFlowFarneback(img1, img2, uFlow, pyr_scale, levels, winsize, iterations, poly_n, poly_sigma, flags);		
+		Video.calcOpticalFlowFarneback(img1, img2, uFlow, pyr_scale, levels, winsize, iterations, poly_n, poly_sigma, flags);
 	}
+	
+	
 }
 

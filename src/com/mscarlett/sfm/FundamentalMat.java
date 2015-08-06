@@ -61,9 +61,13 @@ public class FundamentalMat {
 	    mp1Points.clear();
 	    mp2Points.clear();
 		
-	    // Calculate fundamental matrix using RANSAC
-		Mat F1 = Calib3d.findFundamentalMat(mp1, mp2, Calib3d.FM_RANSAC, dist1, 0.99, mask);
-		
+	    return getF(mp1, mp2, mask);
+	}
+	
+	public Mat getF(MatOfPoint2f mp1, MatOfPoint2f mp2, Mat mask) {
+		// Calculate fundamental matrix using RANSAC
+		Calib3d.findFundamentalMat(mp1, mp2, Calib3d.FM_RANSAC, dist1, 0.99, mask);
+				
 		byte[] return_buff = new byte[(int) (mask.total() * 
 	    		mask.channels())];
 	    mask.get(0, 0, return_buff);
@@ -86,25 +90,7 @@ public class FundamentalMat {
 	    mp2Points.clear();
 		
 	    // Calculate fundamental matrix using linear equations
-		Mat F2 = Calib3d.findFundamentalMat(mp1Inliers, mp2Inliers, Calib3d.FM_8POINT, dist2, 0.99);
-		Mat F3 = Calib3d.findFundamentalMat(mp1Inliers, mp2Inliers, Calib3d.FM_8POINT, dist3, 0.99);
-		
-		// Return the fundamental matrix with the least error
-		double err1 = avgError(F1, mask, mp1, mp2);
-		double err2 = avgError(F2, mask, mp1, mp2);
-		double err3 = avgError(F3, mask, mp1, mp2);
-		
-		if (err1 > err2) {
-			if (err3 > err2) {
-				return F2;
-			} else {
-				return F3;
-			}
-		} else if (err1 > err3) {
-			return F3;
-		} else {
-			return F1;
-		}
+		return Calib3d.findFundamentalMat(mp1Inliers, mp2Inliers, Calib3d.FM_8POINT, dist2, 0.99);
 	}
 	
 	public static double avgError(Mat F, Mat mask, MatOfPoint2f mp1, MatOfPoint2f mp2) {
